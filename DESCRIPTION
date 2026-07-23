@@ -1,0 +1,17 @@
+Package: yieldcurve
+Title: Basic Yield Curve Estimation Models
+Version: 0.0.1
+Date: 2026-07-22
+Authors@R: person("Paweł", "Kliber", email = "p.kliber@ue.poznan.pl", role = c("aut", "cre"))
+Description: Initial tools for yield curve estimation with Nelson-Siegel,
+    Nelson-Siegel-Svensson, and Diebold-Li dynamic Nelson-Siegel models. This
+    preliminary package fits models to observed yields and includes validation,
+    preparation, cash-flow, dirty-price, yield-to-maturity, and price-based
+    estimation helpers for bond and quote data.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
