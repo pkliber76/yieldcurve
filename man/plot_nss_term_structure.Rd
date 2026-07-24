@@ -8,8 +8,8 @@ plot_nss_term_structure(
   observed_yields = NULL,
   maturity_grid = NULL,
   n_grid = 200,
-  curve_col = "#2563EB",
-  point_col = "#111827",
+  curve_col = yc_plot_palette()$curve,
+  point_col = yc_plot_palette()$point,
   lwd = 2,
   pch = 21,
   ...
@@ -34,11 +34,10 @@ plot_nss_term_structure(
 
 \item{pch}{Plotting character for observed bond points.}
 
-\item{...}{Additional arguments passed to \code{\link[graphics:plot]{graphics::plot()}}.}
+\item{...}{Additional named styling arguments such as \code{xlab}, \code{ylab}, \code{main}, \code{ylim}, \code{col}, or \code{lwd}.}
 }
 \value{
-Invisibly returns a data frame with the curve values and, as an
-attribute named \code{"observed"}, the observed points used in the plot.
+A \code{ggplot} object containing the term-structure plot. The curve data frame is stored in attribute \code{"curve"} and observed points in attribute \code{"observed"}. The plot is also printed.
 }
 \description{
 Plots the estimated Nelson-Siegel-Svensson zero-rate term structure for one

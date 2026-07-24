@@ -1,9 +1,13 @@
+if (getRversion() >= "2.15.1") {
+  utils::globalVariables(c("factor", "maturity", "series", "value", "yield"))
+}
+
 .onAttach <- function(libname, pkgname) {
   description <- utils::packageDescription(pkgname, lib.loc = libname)
   package <- description[["Package"]]
   version <- description[["Version"]]
   creation_date <- description[["Date"]]
-  author <- description[["Author"]]
+  author <- description[["Maintainer"]]
   package_description <- description[["Description"]]
 
   if (is.null(creation_date) || is.na(creation_date)) {

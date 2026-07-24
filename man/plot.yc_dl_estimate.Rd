@@ -19,8 +19,7 @@
 \item{...}{Additional arguments passed to \code{\link[=plot_dl_factors]{plot_dl_factors()}} or \code{\link[=plot_dl_term_structure]{plot_dl_term_structure()}}.}
 }
 \value{
-Invisibly returns \code{x} for \code{type = "factors"} or the curve data frame
-returned by \code{\link[=plot_dl_term_structure]{plot_dl_term_structure()}} for \code{type = "term_structure"}.
+A \code{ggplot} object containing the requested Diebold-Li plot. The plot is also printed.
 }
 \description{
 Plots results from \code{\link[=estimate_dl_from_quotes]{estimate_dl_from_quotes()}}. By default it plots the

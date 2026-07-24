@@ -11,7 +11,7 @@
 \item{observed_yields}{Optional data frame with columns \code{date}, \code{bond_id}, \code{maturity}, and \code{yield}.}
 \item{...}{Additional arguments passed to \code{plot_dl_term_structure()}.}
 }
-\value{Invisibly returns the curve data frame returned by \code{plot_dl_term_structure()}.}
+\value{A \code{ggplot} object returned by \code{plot_dl_term_structure()}. The plot is also printed.}
 \description{
 Plots a \code{"yc_dl_price"} object returned by the price-based Diebold-Li
 fitting routine. Currently this draws the estimated Diebold-Li term structure

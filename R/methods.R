@@ -35,8 +35,6 @@ predict.yc_ns <- function(object, newdata = NULL, ...) {
 #' @export
 plot.yc_ns <- function(x, ...) {
   ord <- order(x$maturity)
-  old_par <- setup_yc_plot_par()
-  on.exit(graphics::par(old_par), add = TRUE)
   cols <- yc_plot_palette()
   plot_args <- yc_plot_args(list(
     xlab = "Maturity (years)",
@@ -48,31 +46,48 @@ plot.yc_ns <- function(x, ...) {
     cex = 1.05,
     bty = "n"
   ), ...)
-  do.call(
-    graphics::plot,
-    c(list(x = x$maturity, y = x$observed), plot_args)
-  )
-  add_yc_grid()
-  graphics::points(
-    x$maturity,
-    x$observed,
-    col = plot_args$col,
-    bg = plot_args$bg,
-    pch = plot_args$pch,
-    cex = plot_args$cex
-  )
-  graphics::lines(x$maturity[ord], x$fitted[ord], col = cols$curve, lwd = 2.4)
-  add_yc_legend(
-    legend = c("Observed", "Fitted"),
-    col = c(cols$point, cols$curve),
-    pch = c(21, NA),
-    lty = c(NA, 1),
-    lwd = c(NA, 2.4),
-    pt.bg = c(cols$point_fill, NA)
-  )
-  invisible(x)
-}
 
+  observed <- data.frame(
+    maturity = x$maturity,
+    yield = x$observed,
+    series = "Observed"
+  )
+  fitted <- data.frame(
+    maturity = x$maturity[ord],
+    yield = x$fitted[ord],
+    series = "Fitted"
+  )
+
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_point(
+      data = observed,
+      ggplot2::aes(x = maturity, y = yield, color = series, fill = series),
+      shape = plot_args$pch,
+      size = plot_args$cex * 2.2,
+      stroke = 0.8
+    ) +
+    ggplot2::geom_line(
+      data = fitted,
+      ggplot2::aes(x = maturity, y = yield, color = series),
+      linewidth = 0.8
+    ) +
+    ggplot2::scale_color_manual(
+      values = c(Observed = plot_args$col, Fitted = cols$curve),
+      breaks = c("Observed", "Fitted"),
+      name = NULL
+    ) +
+    ggplot2::scale_fill_manual(
+      values = c(Observed = plot_args$bg, Fitted = cols$curve),
+      breaks = c("Observed", "Fitted"),
+      name = NULL
+    ) +
+    yc_ggplot_labels(plot_args) +
+    yc_ggplot_theme()
+
+  p <- yc_ggplot_limits(p, plot_args)
+  print(p)
+  p
+}
 #' @export
 print.yc_nss <- function(x, ...) {
   cat(x$model, "yield curve fit\n", sep = "")
@@ -112,8 +127,6 @@ predict.yc_nss <- function(object, newdata = NULL, ...) {
 #' @export
 plot.yc_nss <- function(x, ...) {
   ord <- order(x$maturity)
-  old_par <- setup_yc_plot_par()
-  on.exit(graphics::par(old_par), add = TRUE)
   cols <- yc_plot_palette()
   plot_args <- yc_plot_args(list(
     xlab = "Maturity (years)",
@@ -125,31 +138,48 @@ plot.yc_nss <- function(x, ...) {
     cex = 1.05,
     bty = "n"
   ), ...)
-  do.call(
-    graphics::plot,
-    c(list(x = x$maturity, y = x$observed), plot_args)
-  )
-  add_yc_grid()
-  graphics::points(
-    x$maturity,
-    x$observed,
-    col = plot_args$col,
-    bg = plot_args$bg,
-    pch = plot_args$pch,
-    cex = plot_args$cex
-  )
-  graphics::lines(x$maturity[ord], x$fitted[ord], col = cols$curve, lwd = 2.4)
-  add_yc_legend(
-    legend = c("Observed", "Fitted"),
-    col = c(cols$point, cols$curve),
-    pch = c(21, NA),
-    lty = c(NA, 1),
-    lwd = c(NA, 2.4),
-    pt.bg = c(cols$point_fill, NA)
-  )
-  invisible(x)
-}
 
+  observed <- data.frame(
+    maturity = x$maturity,
+    yield = x$observed,
+    series = "Observed"
+  )
+  fitted <- data.frame(
+    maturity = x$maturity[ord],
+    yield = x$fitted[ord],
+    series = "Fitted"
+  )
+
+  p <- ggplot2::ggplot() +
+    ggplot2::geom_point(
+      data = observed,
+      ggplot2::aes(x = maturity, y = yield, color = series, fill = series),
+      shape = plot_args$pch,
+      size = plot_args$cex * 2.2,
+      stroke = 0.8
+    ) +
+    ggplot2::geom_line(
+      data = fitted,
+      ggplot2::aes(x = maturity, y = yield, color = series),
+      linewidth = 0.8
+    ) +
+    ggplot2::scale_color_manual(
+      values = c(Observed = plot_args$col, Fitted = cols$curve),
+      breaks = c("Observed", "Fitted"),
+      name = NULL
+    ) +
+    ggplot2::scale_fill_manual(
+      values = c(Observed = plot_args$bg, Fitted = cols$curve),
+      breaks = c("Observed", "Fitted"),
+      name = NULL
+    ) +
+    yc_ggplot_labels(plot_args) +
+    yc_ggplot_theme()
+
+  p <- yc_ggplot_limits(p, plot_args)
+  print(p)
+  p
+}
 #' Plot Price-Based NS Term Structure
 #'
 #' Plots the estimated Nelson-Siegel zero-rate term structure for one quote
@@ -171,10 +201,9 @@ plot.yc_nss <- function(x, ...) {
 #' @param point_col Color for observed bond points.
 #' @param lwd Line width for the fitted NS curve.
 #' @param pch Plotting character for observed bond points.
-#' @param ... Additional arguments passed to [graphics::plot()].
+#' @param ... Additional named styling arguments such as `xlab`, `ylab`, `main`, `ylim`, `col`, or `lwd`.
 #'
-#' @return Invisibly returns a data frame with the curve values and, as an
-#'   attribute named `"observed"`, the observed points used in the plot.
+#' @return A `ggplot` object containing the term-structure plot. The curve data frame is stored in attribute `"curve"` and observed points in attribute `"observed"`. The plot is also printed.
 #' @export
 plot_ns_term_structure <- function(x,
                                    date = NULL,
@@ -231,11 +260,8 @@ plot_ns_term_structure <- function(x,
   )
 
   plot_y_range <- range(curve$yield, observed_points$ytm, na.rm = TRUE)
-  old_par <- setup_yc_plot_par()
-  on.exit(graphics::par(old_par), add = TRUE)
   cols <- yc_plot_palette()
   plot_args <- yc_plot_args(list(
-    type = "l",
     col = curve_col,
     lwd = max(lwd, 2.4),
     xlab = "Maturity (years)",
@@ -244,28 +270,24 @@ plot_ns_term_structure <- function(x,
     main = paste("NS term structure", format(plot_date)),
     bty = "n"
   ), ...)
-  do.call(
-    graphics::plot,
-    c(list(x = curve$maturity, y = curve$yield), plot_args)
+
+  p <- yc_term_structure_plot(
+    curve = curve,
+    observed = observed_points,
+    observed_x = "time_to_maturity",
+    observed_y = "ytm",
+    curve_col = plot_args$col,
+    point_col = point_col,
+    point_fill = cols$point_fill,
+    lwd = plot_args$lwd,
+    pch = pch,
+    plot_args = plot_args
   )
-  add_yc_grid()
-  graphics::lines(curve$maturity, curve$yield, col = plot_args$col, lwd = plot_args$lwd)
-
-  if (nrow(observed_points) > 0) {
-    graphics::points(
-      observed_points$time_to_maturity,
-      observed_points$ytm,
-      col = point_col,
-      bg = cols$point_fill,
-      pch = pch,
-      cex = 1.05
-    )
-  }
-
-  attr(curve, "observed") <- observed_points
-  invisible(curve)
+  attr(p, "curve") <- curve
+  attr(p, "observed") <- observed_points
+  print(p)
+  p
 }
-
 #' Plot Price-Based NSS Term Structure
 #'
 #' Plots the estimated Nelson-Siegel-Svensson zero-rate term structure for one
@@ -287,10 +309,9 @@ plot_ns_term_structure <- function(x,
 #' @param point_col Color for observed bond points.
 #' @param lwd Line width for the fitted NSS curve.
 #' @param pch Plotting character for observed bond points.
-#' @param ... Additional arguments passed to [graphics::plot()].
+#' @param ... Additional named styling arguments such as `xlab`, `ylab`, `main`, `ylim`, `col`, or `lwd`.
 #'
-#' @return Invisibly returns a data frame with the curve values and, as an
-#'   attribute named `"observed"`, the observed points used in the plot.
+#' @return A `ggplot` object containing the term-structure plot. The curve data frame is stored in attribute `"curve"` and observed points in attribute `"observed"`. The plot is also printed.
 #' @export
 #'
 #' @examples
@@ -371,11 +392,8 @@ plot_nss_term_structure <- function(x,
   )
 
   plot_y_range <- range(curve$yield, observed_points$ytm, na.rm = TRUE)
-  old_par <- setup_yc_plot_par()
-  on.exit(graphics::par(old_par), add = TRUE)
   cols <- yc_plot_palette()
   plot_args <- yc_plot_args(list(
-    type = "l",
     col = curve_col,
     lwd = max(lwd, 2.4),
     xlab = "Maturity (years)",
@@ -384,28 +402,24 @@ plot_nss_term_structure <- function(x,
     main = paste("NSS term structure", format(plot_date)),
     bty = "n"
   ), ...)
-  do.call(
-    graphics::plot,
-    c(list(x = curve$maturity, y = curve$yield), plot_args)
+
+  p <- yc_term_structure_plot(
+    curve = curve,
+    observed = observed_points,
+    observed_x = "time_to_maturity",
+    observed_y = "ytm",
+    curve_col = plot_args$col,
+    point_col = point_col,
+    point_fill = cols$point_fill,
+    lwd = plot_args$lwd,
+    pch = pch,
+    plot_args = plot_args
   )
-  add_yc_grid()
-  graphics::lines(curve$maturity, curve$yield, col = plot_args$col, lwd = plot_args$lwd)
-
-  if (nrow(observed_points) > 0) {
-    graphics::points(
-      observed_points$time_to_maturity,
-      observed_points$ytm,
-      col = point_col,
-      bg = cols$point_fill,
-      pch = pch,
-      cex = 1.05
-    )
-  }
-
-  attr(curve, "observed") <- observed_points
-  invisible(curve)
+  attr(p, "curve") <- curve
+  attr(p, "observed") <- observed_points
+  print(p)
+  p
 }
-
 resolve_plot_date <- function(date, available_dates) {
   if (is.null(date)) {
     return(max(as.Date(available_dates)))
@@ -491,8 +505,7 @@ print.yc_ns_price <- function(x, ...) {
 #'   `time_to_maturity`, and `ytm`.
 #' @param ... Additional arguments passed to [plot_ns_term_structure()].
 #'
-#' @return Invisibly returns the curve data frame returned by
-#'   [plot_ns_term_structure()].
+#' @return A `ggplot` object returned by [plot_ns_term_structure()]. The plot is also printed.
 #' @export
 plot.yc_ns_price <- function(x,
                              date = NULL,
@@ -559,8 +572,7 @@ print.yc_nss_price <- function(x, ...) {
 #'   `time_to_maturity`, and `ytm`.
 #' @param ... Additional arguments passed to [plot_nss_term_structure()].
 #'
-#' @return Invisibly returns the curve data frame returned by
-#'   [plot_nss_term_structure()].
+#' @return A `ggplot` object returned by [plot_nss_term_structure()]. The plot is also printed.
 #' @export
 plot.yc_nss_price <- function(x,
                               date = NULL,
@@ -598,8 +610,7 @@ print.yc_ns_estimate <- function(x, ...) {
 #' @param date Quote date to plot. If omitted, the last available date is used.
 #' @param ... Additional arguments passed to [plot_ns_term_structure()].
 #'
-#' @return Invisibly returns the curve data frame returned by
-#'   [plot_ns_term_structure()].
+#' @return A `ggplot` object returned by [plot_ns_term_structure()]. The plot is also printed.
 #' @export
 plot.yc_ns_estimate <- function(x,
                                 date = NULL,
@@ -638,8 +649,7 @@ print.yc_dl_estimate <- function(x, ...) {
 #' @param ... Additional arguments passed to [plot_dl_factors()] or
 #'   [plot_dl_term_structure()].
 #'
-#' @return Invisibly returns `x` for `type = "factors"` or the curve data frame
-#'   returned by [plot_dl_term_structure()] for `type = "term_structure"`.
+#' @return A `ggplot` object containing the requested Diebold-Li plot. The plot is also printed.
 #' @export
 plot.yc_dl_estimate <- function(x,
                                 date = NULL,
@@ -648,8 +658,7 @@ plot.yc_dl_estimate <- function(x,
   type <- match.arg(type)
 
   if (type == "factors") {
-    plot_dl_factors(x$factors, ...)
-    return(invisible(x))
+    return(plot_dl_factors(x$factors, ...))
   }
 
   plot_dl_term_structure(
@@ -672,8 +681,7 @@ plot.yc_dl_estimate <- function(x,
 #'   `maturity`, and `yield`.
 #' @param ... Additional arguments passed to [plot_dl_term_structure()].
 #'
-#' @return Invisibly returns the curve data frame returned by
-#'   [plot_dl_term_structure()].
+#' @return A `ggplot` object returned by [plot_dl_term_structure()]. The plot is also printed.
 #' @export
 plot.yc_dl_price <- function(x,
                              date = NULL,
@@ -738,8 +746,7 @@ print.yc_nss_estimate <- function(x, ...) {
 #' @param date Quote date to plot. If omitted, the last available date is used.
 #' @param ... Additional arguments passed to [plot_nss_term_structure()].
 #'
-#' @return Invisibly returns the curve data frame returned by
-#'   [plot_nss_term_structure()].
+#' @return A `ggplot` object returned by [plot_nss_term_structure()]. The plot is also printed.
 #' @export
 plot.yc_nss_estimate <- function(x,
                                  date = NULL,
@@ -759,43 +766,22 @@ yc_plot_palette <- function() {
     curve_2 = "#0F766E",
     curve_3 = "#B45309",
     point = "#111827",
-    point_fill = "#FFFFFF",
+    point_fill = "#16F016",
     grid = "#E5E7EB",
     axis = "#374151"
   )
 }
 
 setup_yc_plot_par <- function() {
-  old_par <- graphics::par(no.readonly = TRUE)
-  graphics::par(
-    mar = c(4.6, 4.8, 3.4, 8.8),
-    xpd = FALSE,
-    las = 1,
-    fg = yc_plot_palette()$axis
-  )
-  old_par
+  graphics::par(no.readonly = TRUE)
 }
 
 add_yc_grid <- function() {
-  graphics::grid(col = yc_plot_palette()$grid, lty = 1)
-  graphics::box(col = yc_plot_palette()$axis)
+  invisible(NULL)
 }
 
 add_yc_legend <- function(legend, col, lty, pch = NA, lwd = NA, pt.bg = NA) {
-  graphics::legend(
-    "topright",
-    inset = c(-0.34, 0),
-    legend = legend,
-    col = col,
-    lty = lty,
-    pch = pch,
-    lwd = lwd,
-    pt.bg = pt.bg,
-    bty = "n",
-    xpd = NA,
-    cex = 0.9,
-    y.intersp = 1.15
-  )
+  invisible(NULL)
 }
 
 yc_plot_args <- function(defaults, ...) {
@@ -812,6 +798,91 @@ yc_plot_args <- function(defaults, ...) {
     defaults[[nm]] <- dots[[nm]]
   }
   defaults
+}
+
+yc_ggplot_theme <- function() {
+  cols <- yc_plot_palette()
+  ggplot2::theme_minimal(base_size = 11) +
+    ggplot2::theme(
+      panel.grid.major = ggplot2::element_line(color = cols$grid, linewidth = 0.35),
+      panel.grid.minor = ggplot2::element_blank(),
+      axis.title = ggplot2::element_text(color = cols$axis),
+      axis.text = ggplot2::element_text(color = cols$axis),
+      plot.title = ggplot2::element_text(color = cols$axis, face = "bold"),
+      legend.position = "right",
+      legend.title = ggplot2::element_blank()
+    )
+}
+
+yc_ggplot_labels <- function(plot_args) {
+  ggplot2::labs(
+    x = plot_args$xlab %||% NULL,
+    y = plot_args$ylab %||% NULL,
+    title = plot_args$main %||% NULL
+  )
+}
+
+yc_ggplot_limits <- function(p, plot_args) {
+  if (!is.null(plot_args$ylim)) {
+    p <- p + ggplot2::coord_cartesian(ylim = plot_args$ylim)
+  }
+  p
+}
+
+yc_term_structure_plot <- function(curve,
+                                   observed,
+                                   observed_x,
+                                   observed_y,
+                                   curve_col,
+                                   point_col,
+                                   point_fill,
+                                   lwd,
+                                   pch,
+                                   plot_args) {
+  curve$series <- "Fitted"
+  p <- ggplot2::ggplot(curve, ggplot2::aes(x = maturity, y = yield)) +
+    ggplot2::geom_line(
+      ggplot2::aes(color = series),
+      linewidth = lwd / 3
+    )
+
+  if (nrow(observed) > 0) {
+    observed_plot <- data.frame(
+      maturity = observed[[observed_x]],
+      yield = observed[[observed_y]],
+      series = "Observed"
+    )
+    p <- p + ggplot2::geom_point(
+      data = observed_plot,
+      ggplot2::aes(x = maturity, y = yield, color = series, fill = series),
+      shape = pch,
+      size = 2.4,
+      stroke = 0.8
+    )
+  }
+
+  p <- p +
+    ggplot2::scale_color_manual(
+      values = c(Fitted = curve_col, Observed = point_col),
+      breaks = c("Observed", "Fitted"),
+      name = NULL
+    ) +
+    yc_ggplot_labels(plot_args) +
+    yc_ggplot_theme()
+
+  if (nrow(observed) > 0) {
+    p <- p + ggplot2::scale_fill_manual(
+      values = c(Observed = point_fill),
+      breaks = "Observed",
+      name = NULL
+    )
+  }
+
+  yc_ggplot_limits(p, plot_args)
+}
+
+`%||%` <- function(x, y) {
+  if (is.null(x)) y else x
 }
 
 count_price_dates <- function(prices) {

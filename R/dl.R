@@ -58,7 +58,7 @@ fit_dl_factors <- function(data, lambda = 0.0609, progress = FALSE) {
     }
 
     x <- dl_loadings(subset$maturity, lambda)
-    fit <- lm.fit(x, subset$yield)
+    fit <- stats::lm.fit(x, subset$yield)
     if (fit$rank < 3) {
       stop("Diebold-Li loading matrix is rank deficient for date ", d, ".", call. = FALSE)
     }
@@ -83,10 +83,9 @@ fit_dl_factors <- function(data, lambda = 0.0609, progress = FALSE) {
 #' Plots level, slope, and curvature factor time series.
 #'
 #' @param factors A data frame returned by [fit_dl_factors()].
-#' @param ... Additional graphical arguments passed to [graphics::matplot()],
-#'   such as `col`, `main`, `xlab`, `ylab`, `lwd`, or `lty`.
+#' @param ... Additional named styling arguments such as `col`, `main`, `xlab`, `ylab`, `ylim`, `lwd`, or `lty`.
 #'
-#' @return Invisibly returns `factors`.
+#' @return A `ggplot` object containing the factor time-series plot. The plot is also printed.
 #' @export
 plot_dl_factors <- function(factors, ...) {
   if (!is.data.frame(factors)) {
@@ -94,14 +93,9 @@ plot_dl_factors <- function(factors, ...) {
   }
   check_required_columns(factors, c("date", "level", "slope", "curvature"), "factors")
 
-  y <- as.matrix(factors[, c("level", "slope", "curvature")])
-  old_par <- setup_yc_plot_par()
-  on.exit(graphics::par(old_par), add = TRUE)
-  graphics::par(mar = c(4.6, 4.8, 3.4, 12), xpd = NA)
   cols <- yc_plot_palette()
-  line_cols <- c(cols$curve, cols$curve_2, cols$curve_3)
+  line_cols <- c(level = cols$curve, slope = cols$curve_2, curvature = cols$curve_3)
   plot_args <- yc_plot_args(list(
-    type = "l",
     lty = 1,
     lwd = 2.2,
     col = line_cols,
@@ -110,29 +104,31 @@ plot_dl_factors <- function(factors, ...) {
     main = "Diebold-Li Factors",
     bty = "n"
   ), ...)
-  do.call(
-    graphics::matplot,
-    c(list(x = factors$date, y = y), plot_args)
-  )
-  add_yc_grid()
-  graphics::matlines(factors$date, y, lty = plot_args$lty, lwd = plot_args$lwd, col = plot_args$col)
-  usr <- graphics::par("usr")
-  graphics::legend(
-    x = usr[2] + 0.08 * diff(usr[1:2]),
-    y = usr[4],
-    xjust = 0,
-    yjust = 1,
-    legend = colnames(y),
-    col = plot_args$col,
-    lty = rep(plot_args$lty, length.out = ncol(y)),
-    lwd = rep(plot_args$lwd, length.out = ncol(y)),
-    bty = "n",
-    cex = 0.9,
-    y.intersp = 1.15
-  )
-  invisible(factors)
-}
 
+  factor_data <- data.frame(
+    date = rep(factors$date, 3),
+    factor = rep(c("level", "slope", "curvature"), each = nrow(factors)),
+    value = c(factors$level, factors$slope, factors$curvature)
+  )
+
+  colors <- rep(plot_args$col, length.out = 3)
+  names(colors) <- c("level", "slope", "curvature")
+
+  p <- ggplot2::ggplot(factor_data, ggplot2::aes(x = date, y = value, color = factor)) +
+    ggplot2::geom_point(size = 2.2) +
+    ggplot2::scale_color_manual(values = colors, breaks = c("level", "slope", "curvature"), name = NULL) +
+    yc_ggplot_labels(plot_args) +
+    yc_ggplot_theme()
+
+  if (length(unique(factors$date)) > 1) {
+    p <- p + ggplot2::geom_line(linewidth = plot_args$lwd / 3, linetype = plot_args$lty[1])
+  }
+
+  p <- yc_ggplot_limits(p, plot_args)
+  attr(p, "factors") <- factors
+  print(p)
+  p
+}
 #' Estimate Diebold-Li Factors from Clean Price Quotes
 #'
 #' Runs a Diebold-Li estimation workflow from the package's bond and quote structures:
@@ -456,10 +452,9 @@ dl_model_prices_from_cash_flows <- function(cash_flow_data, coefficients, lambda
 #' @param point_col Color for observed bond points.
 #' @param lwd Line width for the fitted DL curve.
 #' @param pch Plotting character for observed bond points.
-#' @param ... Additional arguments passed to [graphics::plot()].
+#' @param ... Additional named styling arguments such as `xlab`, `ylab`, `main`, `ylim`, `col`, or `lwd`.
 #'
-#' @return Invisibly returns a data frame with the curve values and, as an
-#'   attribute named `"observed"`, the observed points used in the plot.
+#' @return A `ggplot` object containing the term-structure plot. The curve data frame is stored in attribute `"curve"` and observed points in attribute `"observed"`. The plot is also printed.
 #' @export
 plot_dl_term_structure <- function(x,
                                    date = NULL,
@@ -520,11 +515,8 @@ plot_dl_term_structure <- function(x,
   )
 
   plot_y_range <- range(curve$yield, observed_points$yield, na.rm = TRUE)
-  old_par <- setup_yc_plot_par()
-  on.exit(graphics::par(old_par), add = TRUE)
   cols <- yc_plot_palette()
   plot_args <- yc_plot_args(list(
-    type = "l",
     col = curve_col,
     lwd = max(lwd, 2.4),
     xlab = "Maturity (years)",
@@ -533,28 +525,24 @@ plot_dl_term_structure <- function(x,
     main = paste("Diebold-Li term structure", format(plot_date)),
     bty = "n"
   ), ...)
-  do.call(
-    graphics::plot,
-    c(list(x = curve$maturity, y = curve$yield), plot_args)
+
+  p <- yc_term_structure_plot(
+    curve = curve,
+    observed = observed_points,
+    observed_x = "maturity",
+    observed_y = "yield",
+    curve_col = plot_args$col,
+    point_col = point_col,
+    point_fill = cols$point_fill,
+    lwd = plot_args$lwd,
+    pch = pch,
+    plot_args = plot_args
   )
-  add_yc_grid()
-  graphics::lines(curve$maturity, curve$yield, col = plot_args$col, lwd = plot_args$lwd)
-
-  if (nrow(observed_points) > 0) {
-    graphics::points(
-      observed_points$maturity,
-      observed_points$yield,
-      col = point_col,
-      bg = cols$point_fill,
-      pch = pch,
-      cex = 1.05
-    )
-  }
-
-  attr(curve, "observed") <- observed_points
-  invisible(curve)
+  attr(p, "curve") <- curve
+  attr(p, "observed") <- observed_points
+  print(p)
+  p
 }
-
 dl_observed_points_for_plot <- function(observed_yields, plot_date) {
   if (is.null(observed_yields)) {
     return(data.frame(

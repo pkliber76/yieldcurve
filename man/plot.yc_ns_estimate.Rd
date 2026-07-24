@@ -19,8 +19,7 @@
 \item{...}{Additional arguments passed to \code{\link[=plot_ns_term_structure]{plot_ns_term_structure()}}.}
 }
 \value{
-Invisibly returns the curve data frame returned by
-\code{\link[=plot_ns_term_structure]{plot_ns_term_structure()}}.
+A \code{ggplot} object returned by \code{\link[=plot_ns_term_structure]{plot_ns_term_structure()}}. The plot is also printed.
 }
 \description{
 Plots results from \code{\link[=estimate_ns_from_quotes]{estimate_ns_from_quotes()}}. Currently this draws the

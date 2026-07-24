@@ -5,7 +5,7 @@
 \arguments{
 \item{factors}{A data frame returned by \code{fit_dl_factors()}.}
 
-\item{...}{Additional graphical arguments passed to \code{\link[graphics:matplot]{graphics::matplot()}}, such as \code{col}, \code{main}, \code{xlab}, \code{ylab}, \code{lwd}, or \code{lty}.}
+\item{...}{Additional named styling arguments such as \code{col}, \code{main}, \code{xlab}, \code{ylab}, \code{ylim}, \code{lwd}, or \code{lty}.}
 }
-\value{Invisibly returns \code{factors}.}
+\value{A \code{ggplot} object containing the factor time-series plot. The plot is also printed.}
 \description{Plots level, slope, and curvature factor time series.}

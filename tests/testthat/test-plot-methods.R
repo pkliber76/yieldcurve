@@ -92,9 +92,9 @@ test_that("generic term-structure plots default to the last date", {
   nss_estimate_curve <- plot(nss_estimate)
   dl_estimate_curve <- plot(dl_estimate, type = "term_structure")
 
-  expect_s3_class(ns_curve, "data.frame")
-  expect_s3_class(nss_curve, "data.frame")
-  expect_s3_class(dl_curve, "data.frame")
+  expect_s3_class(ns_curve, "ggplot")
+  expect_s3_class(nss_curve, "ggplot")
+  expect_s3_class(dl_curve, "ggplot")
   expect_equal(attr(ns_estimate_curve, "observed")$date[1], max(dates))
   expect_equal(attr(nss_estimate_curve, "observed")$date[1], max(dates))
   expect_equal(attr(dl_estimate_curve, "observed")$date[1], max(dates))

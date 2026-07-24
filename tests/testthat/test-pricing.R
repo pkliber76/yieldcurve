@@ -448,9 +448,11 @@ test_that("plot_nss_term_structure returns curve and observed points", {
   curve_from_s3 <- plot(est, date = settlement_date, n_grid = 20)
   grDevices::dev.off()
 
-  expect_equal(nrow(curve), 20)
-  expect_equal(nrow(curve_from_s3), 20)
-  expect_named(curve, c("maturity", "yield"))
+  expect_s3_class(curve, "ggplot")
+  expect_equal(nrow(attr(curve, "curve")), 20)
+  expect_s3_class(curve_from_s3, "ggplot")
+  expect_equal(nrow(attr(curve_from_s3, "curve")), 20)
+  expect_named(attr(curve, "curve"), c("maturity", "yield"))
   expect_equal(nrow(attr(curve, "observed")), 6)
 })
 
@@ -484,9 +486,11 @@ test_that("plot_ns_term_structure returns curve and observed points", {
   curve_from_s3 <- plot(est, date = settlement_date, n_grid = 20)
   grDevices::dev.off()
 
-  expect_equal(nrow(curve), 20)
-  expect_equal(nrow(curve_from_s3), 20)
-  expect_named(curve, c("maturity", "yield"))
+  expect_s3_class(curve, "ggplot")
+  expect_equal(nrow(attr(curve, "curve")), 20)
+  expect_s3_class(curve_from_s3, "ggplot")
+  expect_equal(nrow(attr(curve_from_s3, "curve")), 20)
+  expect_named(attr(curve, "curve"), c("maturity", "yield"))
   expect_equal(nrow(attr(curve, "observed")), 6)
 })
 
@@ -521,8 +525,10 @@ test_that("plot_dl_term_structure returns curve and observed points", {
   curve_from_s3 <- plot(est, type = "term_structure", date = settlement_date, n_grid = 20)
   grDevices::dev.off()
 
-  expect_equal(nrow(curve), 20)
-  expect_equal(nrow(curve_from_s3), 20)
-  expect_named(curve, c("maturity", "yield"))
+  expect_s3_class(curve, "ggplot")
+  expect_equal(nrow(attr(curve, "curve")), 20)
+  expect_s3_class(curve_from_s3, "ggplot")
+  expect_equal(nrow(attr(curve_from_s3, "curve")), 20)
+  expect_named(attr(curve, "curve"), c("maturity", "yield"))
   expect_equal(nrow(attr(curve, "observed")), 6)
 })

@@ -11,7 +11,7 @@
 \item{observed_yields}{Optional data frame with columns \code{date}, \code{bond_id}, \code{time_to_maturity}, and \code{ytm}.}
 \item{...}{Additional arguments passed to \code{plot_nss_term_structure()}.}
 }
-\value{Invisibly returns the curve data frame returned by \code{plot_nss_term_structure()}.}
+\value{A \code{ggplot} object returned by \code{plot_nss_term_structure()}. The plot is also printed.}
 \description{
 Plots a \code{"yc_nss_price"} object returned by \code{fit_nss_dirty_prices()} or
 \code{fit_nss_prices()}. This is a generic \code{plot()} method that draws the
